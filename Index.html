@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculator</title>
+<style>
+/* ---------- Reset & base ---------- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --bg: #14171c;
+  --panel: #1c2128;
+  --display-bg: #101317;
+  --accent: #ff7a45;
+  --accent-dim: #c75a30;
+  --text: #eef0f3;
+  --text-dim: #8a909b;
+  --key-num: #262c35;
+  --key-fn: #323a45;
+  --key-sci: #20262e;
+  --radius: 14px;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.calculator {
+  width: 100%;
+  max-width: 380px;
+  background: var(--panel);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.display {
+  background: var(--display-bg);
+  border-radius: var(--radius);
+  padding: 22px 18px;
+  text-align: right;
+  overflow: hidden;
+}
+
+.display-expression {
+  min-height: 22px;
+  font-size: 1rem;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.display-expression::-webkit-scrollbar {
+  display: none;
+}
+
+.display-result {
+  margin-top: 6px;
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(1.8rem, 8vw, 2.6rem);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  letter-spacing: 0.5px;
+}
+.display-result::-webkit-scrollbar {
+  display: none;
+}
+
+.sci-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.key-sci {
+  background: var(--key-sci);
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  padding: 12px 0;
+  border-radius: 10px;
+}
+
+.key-sci:hover {
+  color: var(--text);
+}
+
+.key-mode {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.key-mode[aria-pressed="false"] {
+  color: var(--text-dim);
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.key {
+  border: none;
+  outline: none;
+  border-radius: var(--radius);
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 18px 0;
+  cursor: pointer;
+  color: var(--text);
+  transition: transform 0.08s ease, filter 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.key:hover {
+  filter: brightness(1.15);
+}
+
+.key:active {
+  transform: scale(0.94);
+}
+
+.key:focus-visible {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+.key-num {
+  background: var(--key-num);
+}
+
+.key-fn {
+  background: var(--key-fn);
+  color: var(--text);
+}
+
+.key-op {
+  background: var(--key-fn);
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+
+.key-equals {
+  grid-column: span 2;
+  background: var(--accent);
+  color: #1a1a1a;
+}
+
+.key-equals:hover {
+  filter: brightness(1.08);
+  background: var(--accent-dim);
+}
+
+.key-zero {
+  grid-column: span 1;
+}
+
+.key-op.active,
+.key-sci.active {
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+
+@media (max-width: 420px) {
+  .calculator {
+    padding: 16px;
+    border-radius: 18px;
+  }
+  .key {
+    padding: 16px 0;
+    font-size: 1.1rem;
+  }
+  .key-sci {
+    padding: 10px 0;
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 700px) {
+  .calculator {
+    max-width: 420px;
+    padding: 28px;
+  }
+  .key {
+    padding: 22px 0;
+    font-size: 1.35rem;
+  }
+  .key-sci {
+    padding: 14px 0;
+    font-size: 1rem;
+  }
+}
+</style>
+</head>
+<body>
+
+  <main class="calculator" aria-label="Calculator">
+    <section class="display" aria-live="polite">
+      <div class="display-expression" id="expression"></div>
+      <div class="display-result" id="result">0</div>
+    </section>
+
+    <section class="sci-row" aria-label="Scientific functions">
+      <button type="button" class="key key-sci" data-action="function" data-value="sin">sin</button>
+      <button type="button" class="key key-sci" data-action="function" data-value="cos">cos</button>
+      <button type="button" class="key key-sci" data-action="function" data-value="tan">tan</button>
+      <button type="button" class="key key-sci key-mode" data-action="toggle-mode" id="modeToggle" aria-pressed="true">DEG</button>
+    </section>
+
+    <section class="keypad">
+      <button type="button" class="key key-fn" data-action="clear">C</button>
+      <button type="button" class="key key-fn" data-action="delete" aria-label="Delete">⌫</button>
+      <button type="button" class="key key-fn" data-action="percent">%</button>
+      <button type="button" class="key key-op" data-action="operator" data-value="÷">÷</button>
+
+      <button type="button" class="key key-num" data-action="number" data-value="7">7</button>
+      <button type="button" class="key key-num" data-action="number" data-value="8">8</button>
+      <button type="button" class="key key-num" data-action="number" data-value="9">9</button>
+      <button type="button" class="key key-op" data-action="operator" data-value="×">×</button>
+
+      <button type="button" class="key key-num" data-action="number" data-value="4">4</button>
+      <button type="button" class="key key-num" data-action="number" data-value="5">5</button>
+      <button type="button" class="key key-num" data-action="number" data-value="6">6</button>
+      <button type="button" class="key key-op" data-action="operator" data-value="-">−</button>
+
+      <button type="button" class="key key-num" data-action="number" data-value="1">1</button>
+      <button type="button" class="key key-num" data-action="number" data-value="2">2</button>
+      <button type="button" class="key key-num" data-action="number" data-value="3">3</button>
+      <button type="button" class="key key-op" data-action="operator" data-value="+">+</button>
+
+      <button type="button" class="key key-num key-zero" data-action="number" data-value="0">0</button>
+      <button type="button" class="key key-num" data-action="decimal">.</button>
+      <button type="button" class="key key-equals" data-action="equals">=</button>
+    </section>
+  </main>
+
+<script>
+'use strict';
+
+const state = {
+  expression: '',
+  currentValue: '0',
+  previousValue: null,
+  operator: null,
+  justEvaluated: false,
+  degreeMode: true,
+};
+
+const expressionEl = document.getElementById('expression');
+const resultEl = document.getElementById('result');
+const keypad = document.querySelector('.keypad');
+const sciRow = document.querySelector('.sci-row');
+const modeToggle = document.getElementById('modeToggle');
+
+function formatNumber(numStr) {
+  if (numStr === 'Error') return 'Error';
+  const num = Number(numStr);
+  if (!isFinite(num)) return 'Error';
+  const absNum = Math.abs(num);
+  if (absNum !== 0 && (absNum >= 1e15 || absNum < 1e-9)) {
+    return num.toExponential(6);
+  }
+  let str = num.toString();
+  if (str.length > 16) {
+    str = num.toPrecision(12);
+    str = Number(str).toString();
+  }
+  return str;
+}
+
+function updateDisplay() {
+  expressionEl.textContent = state.expression;
+  resultEl.textContent = formatNumber(state.currentValue);
+}
+
+function clearAll() {
+  state.expression = '';
+  state.currentValue = '0';
+  state.previousValue = null;
+  state.operator = null;
+  state.justEvaluated = false;
+  updateDisplay();
+}
+
+function deleteLast() {
+  if (state.justEvaluated) {
+    clearAll();
+    return;
+  }
+  if (state.currentValue.length <= 1 || (state.currentValue.length === 2 && state.currentValue.startsWith('-'))) {
+    state.currentValue = '0';
+  } else {
+    state.currentValue = state.currentValue.slice(0, -1);
+  }
+  updateDisplay();
+}
+
+function inputDigit(digit) {
+  if (state.justEvaluated) {
+    state.currentValue = digit;
+    state.expression = '';
+    state.justEvaluated = false;
+    updateDisplay();
+    return;
+  }
+  if (state.currentValue === '0') {
+    state.currentValue = digit;
+  } else {
+    if (state.currentValue.replace('-', '').replace('.', '').length >= 16) return;
+    state.currentValue += digit;
+  }
+  updateDisplay();
+}
+
+function inputDecimal() {
+  if (state.justEvaluated) {
+    state.currentValue = '0.';
+    state.expression = '';
+    state.justEvaluated = false;
+    updateDisplay();
+    return;
+  }
+  if (!state.currentValue.includes('.')) {
+    state.currentValue += '.';
+    updateDisplay();
+  }
+}
+
+function calculate(a, b, op) {
+  const x = parseFloat(a);
+  const y = parseFloat(b);
+  switch (op) {
+    case '+': return x + y;
+    case '-': return x - y;
+    case '×': return x * y;
+    case '÷':
+      if (y === 0) return null;
+      return x / y;
+    default: return y;
+  }
+}
+
+function applyTrig(fnName) {
+  if (state.currentValue === 'Error') return;
+  const raw = parseFloat(state.currentValue);
+  if (isNaN(raw)) return;
+
+  const radians = state.degreeMode ? (raw * Math.PI) / 180 : raw;
+  let outcome;
+
+  switch (fnName) {
+    case 'sin':
+      outcome = Math.sin(radians);
+      break;
+    case 'cos':
+      outcome = Math.cos(radians);
+      break;
+    case 'tan': {
+      const cosVal = Math.cos(radians);
+      if (Math.abs(cosVal) < 1e-12) {
+        showError();
+        return;
+      }
+      outcome = Math.tan(radians);
+      break;
+    }
+    default:
+      return;
+  }
+
+  outcome = Math.round(outcome * 1e12) / 1e12;
+  state.expression = `${fnName}(${formatNumber(state.currentValue)})${state.degreeMode ? '°' : ' rad'} =`;
+  state.currentValue = String(outcome);
+  state.justEvaluated = true;
+  updateDisplay();
+}
+
+function chooseOperator(op) {
+  if (state.operator && !state.justEvaluated && state.previousValue !== null) {
+    const outcome = calculate(state.previousValue, state.currentValue, state.operator);
+    if (outcome === null) {
+      showError();
+      return;
+    }
+    state.previousValue = String(outcome);
+    state.currentValue = String(outcome);
+  } else {
+    state.previousValue = state.currentValue;
+  }
+  state.operator = op;
+  state.expression = `${formatNumber(state.previousValue)} ${op}`;
+  state.justEvaluated = false;
+  primeForNextEntry();
+  updateDisplay();
+}
+
+function primeForNextEntry() {
+  state.currentValue = '0';
+}
+
+function applyPercent() {
+  if (state.currentValue === 'Error') return;
+  const val = parseFloat(state.currentValue);
+  if (isNaN(val)) return;
+  if (state.operator && state.previousValue !== null) {
+    const base = parseFloat(state.previousValue);
+    state.currentValue = String((base * val) / 100);
+  } else {
+    state.currentValue = String(val / 100);
+  }
+  updateDisplay();
+}
+
+function evaluateExpression() {
+  if (state.operator === null || state.previousValue === null) return;
+  const outcome = calculate(state.previousValue, state.currentValue, state.operator);
+  if (outcome === null) {
+    showError();
+    return;
+  }
+  state.expression = `${formatNumber(state.previousValue)} ${state.operator} ${formatNumber(state.currentValue)} =`;
+  state.currentValue = String(outcome);
+  state.previousValue = null;
+  state.operator = null;
+  state.justEvaluated = true;
+  updateDisplay();
+}
+
+function showError() {
+  state.currentValue = 'Error';
+  state.previousValue = null;
+  state.operator = null;
+  state.justEvaluated = true;
+  updateDisplay();
+}
+
+function toggleDegreeMode() {
+  state.degreeMode = !state.degreeMode;
+  modeToggle.textContent = state.degreeMode ? 'DEG' : 'RAD';
+  modeToggle.setAttribute('aria-pressed', String(state.degreeMode));
+}
+
+keypad.addEventListener('click', (e) => {
+  const btn = e.target.closest('.key');
+  if (!btn) return;
+  const action = btn.dataset.action;
+  const value = btn.dataset.value;
+  switch (action) {
+    case 'number': inputDigit(value); break;
+    case 'decimal': inputDecimal(); break;
+    case 'operator': chooseOperator(value); flashKey(btn, '.key-op'); break;
+    case 'percent': applyPercent(); break;
+    case 'clear': clearAll(); break;
+    case 'delete': deleteLast(); break;
+    case 'equals': evaluateExpression(); break;
+    default: break;
+  }
+});
+
+sciRow.addEventListener('click', (e) => {
+  const btn = e.target.closest('.key');
+  if (!btn) return;
+  const action = btn.dataset.action;
+  const value = btn.dataset.value;
+  if (action === 'function') {
+    applyTrig(value);
+    flashKey(btn, '.key-sci');
+  } else if (action === 'toggle-mode') {
+    toggleDegreeMode();
+  }
+});
+
+function flashKey(btn, groupSelector) {
+  document.querySelectorAll(groupSelector).forEach((el) => el.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+document.addEventListener('keydown', (e) => {
+  const key = e.key;
+  if (/^[0-9]$/.test(key)) {
+    inputDigit(key);
+    return;
+  }
+  switch (key) {
+    case '.': inputDecimal(); break;
+    case '+': chooseOperator('+'); break;
+    case '-': chooseOperator('-'); break;
+    case '*': case 'x': case 'X': chooseOperator('×'); break;
+    case '/': e.preventDefault(); chooseOperator('÷'); break;
+    case '%': applyPercent(); break;
+    case 'Enter': case '=': e.preventDefault(); evaluateExpression(); break;
+    case 'Backspace': deleteLast(); break;
+    case 'Delete': case 'Escape': clearAll(); break;
+    default: break;
+  }
+});
+
+clearAll();
+</script>
+</body>
+</html>
