@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scientific Calculator</title>
+<title>Calculator</title>
 <style>
+/* ---------- Reset & base ---------- */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -25,7 +26,9 @@
   --radius: 14px;
 }
 
-html, body { height: 100%; }
+html, body {
+  height: 100%;
+}
 
 body {
   background: var(--bg);
@@ -40,99 +43,122 @@ body {
 
 .calculator {
   width: 100%;
-  max-width: 420px;
+  max-width: 380px;
   background: var(--panel);
   border-radius: 24px;
   padding: 20px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .display {
   background: var(--display-bg);
   border-radius: var(--radius);
-  padding: 20px 18px;
+  padding: 22px 18px;
   text-align: right;
   overflow: hidden;
 }
 
-.memory-indicator {
-  text-align: left;
-  font-size: 0.75rem;
-  color: var(--accent);
-  height: 14px;
-  letter-spacing: 1px;
-}
-
 .display-expression {
-  min-height: 20px;
-  font-size: 0.95rem;
+  min-height: 22px;
+  font-size: 1rem;
   color: var(--text-dim);
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
 }
-.display-expression::-webkit-scrollbar { display: none; }
+.display-expression::-webkit-scrollbar {
+  display: none;
+}
 
 .display-result {
-  margin-top: 4px;
+  margin-top: 6px;
   font-family: "Courier New", Courier, monospace;
-  font-size: clamp(1.6rem, 7vw, 2.4rem);
+  font-size: clamp(1.8rem, 8vw, 2.6rem);
   font-weight: 700;
   white-space: nowrap;
   overflow-x: auto;
   scrollbar-width: none;
   letter-spacing: 0.5px;
 }
-.display-result::-webkit-scrollbar { display: none; }
+.display-result::-webkit-scrollbar {
+  display: none;
+}
 
-.row {
+.sci-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.key-sci {
+  background: var(--key-sci);
+  color: var(--text-dim);
+  font-size: 0.95rem;
+  padding: 12px 0;
+  border-radius: 10px;
+}
+
+.key-sci:hover {
+  color: var(--text);
+}
+
+.key-mode {
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.key-mode[aria-pressed="false"] {
+  color: var(--text-dim);
 }
 
 .keypad {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
 }
 
 .key {
   border: none;
   outline: none;
   border-radius: var(--radius);
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  padding: 16px 0;
+  padding: 18px 0;
   cursor: pointer;
   color: var(--text);
   transition: transform 0.08s ease, filter 0.15s ease, background-color 0.15s ease, color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.key:hover { filter: brightness(1.15); }
-.key:active { transform: scale(0.94); }
-.key:focus-visible { box-shadow: 0 0 0 3px var(--accent); }
-
-.key-num { background: var(--key-num); }
-.key-fn { background: var(--key-fn); color: var(--text); }
-.key-op { background: var(--key-fn); color: var(--accent); font-size: 1.3rem; }
-
-.key-sci {
-  background: var(--key-sci);
-  color: var(--text-dim);
-  font-size: 0.85rem;
-  padding: 12px 0;
-  border-radius: 10px;
+.key:hover {
+  filter: brightness(1.15);
 }
-.key-sci:hover { color: var(--text); }
 
-.key-mode, .key-mem {
+.key:active {
+  transform: scale(0.94);
+}
+
+.key:focus-visible {
+  box-shadow: 0 0 0 3px var(--accent);
+}
+
+.key-num {
+  background: var(--key-num);
+}
+
+.key-fn {
+  background: var(--key-fn);
+  color: var(--text);
+}
+
+.key-op {
+  background: var(--key-fn);
   color: var(--accent);
-  font-weight: 700;
+  font-size: 1.4rem;
 }
 
 .key-equals {
@@ -140,64 +166,71 @@ body {
   background: var(--accent);
   color: #1a1a1a;
 }
-.key-equals:hover { filter: brightness(1.08); background: var(--accent-dim); }
 
-.key-zero { grid-column: span 1; }
+.key-equals:hover {
+  filter: brightness(1.08);
+  background: var(--accent-dim);
+}
 
-.key-op.active, .key-sci.active {
+.key-zero {
+  grid-column: span 1;
+}
+
+.key-op.active,
+.key-sci.active {
   box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 @media (max-width: 420px) {
-  .calculator { padding: 14px; border-radius: 18px; }
-  .key { padding: 14px 0; font-size: 1.05rem; }
-  .key-sci { padding: 10px 0; font-size: 0.75rem; }
+  .calculator {
+    padding: 16px;
+    border-radius: 18px;
+  }
+  .key {
+    padding: 16px 0;
+    font-size: 1.1rem;
+  }
+  .key-sci {
+    padding: 10px 0;
+    font-size: 0.85rem;
+  }
 }
 
 @media (min-width: 700px) {
-  .calculator { max-width: 460px; padding: 26px; }
-  .key { padding: 20px 0; font-size: 1.25rem; }
-  .key-sci { padding: 13px 0; font-size: 0.85rem; }
+  .calculator {
+    max-width: 420px;
+    padding: 28px;
+  }
+  .key {
+    padding: 22px 0;
+    font-size: 1.35rem;
+  }
+  .key-sci {
+    padding: 14px 0;
+    font-size: 1rem;
+  }
 }
 </style>
 </head>
 <body>
 
-  <main class="calculator" aria-label="Scientific Calculator">
+  <main class="calculator" aria-label="Calculator">
     <section class="display" aria-live="polite">
-      <div class="memory-indicator" id="memoryIndicator"></div>
       <div class="display-expression" id="expression"></div>
       <div class="display-result" id="result">0</div>
     </section>
 
-    <section class="row" aria-label="Memory functions">
-      <button type="button" class="key key-sci key-mem" data-action="memory" data-value="MC">MC</button>
-      <button type="button" class="key key-sci key-mem" data-action="memory" data-value="MR">MR</button>
-      <button type="button" class="key key-sci key-mem" data-action="memory" data-value="M+">M+</button>
-      <button type="button" class="key key-sci key-mem" data-action="memory" data-value="M-">M−</button>
-      <button type="button" class="key key-sci key-mode" data-action="toggle-mode" id="modeToggle" aria-pressed="true">DEG</button>
-    </section>
-
-    <section class="row" aria-label="Scientific functions">
+    <section class="sci-row" aria-label="Scientific functions">
       <button type="button" class="key key-sci" data-action="function" data-value="sin">sin</button>
       <button type="button" class="key key-sci" data-action="function" data-value="cos">cos</button>
       <button type="button" class="key key-sci" data-action="function" data-value="tan">tan</button>
-      <button type="button" class="key key-sci" data-action="function" data-value="sqrt">√x</button>
-      <button type="button" class="key key-sci" data-action="function" data-value="square">x²</button>
-    </section>
-
-    <section class="row" aria-label="More functions">
-      <button type="button" class="key key-sci" data-action="function" data-value="inverse">1/x</button>
-      <button type="button" class="key key-sci" data-action="function" data-value="log">log</button>
-      <button type="button" class="key key-sci" data-action="function" data-value="ln">ln</button>
-      <button type="button" class="key key-sci" data-action="constant" data-value="pi">π</button>
-      <button type="button" class="key key-sci" data-action="constant" data-value="e">e</button>
+      <button type="button" class="key key-sci key-mode" data-action="toggle-mode" id="modeToggle" aria-pressed="true">DEG</button>
     </section>
 
     <section class="keypad">
       <button type="button" class="key key-fn" data-action="clear">C</button>
       <button type="button" class="key key-fn" data-action="delete" aria-label="Delete">⌫</button>
-      <button type="button" class="key key-fn" data-action="negate">±</button>
+      <button type="button" class="key key-fn" data-action="percent">%</button>
       <button type="button" class="key key-op" data-action="operator" data-value="÷">÷</button>
 
       <button type="button" class="key key-num" data-action="number" data-value="7">7</button>
@@ -217,7 +250,6 @@ body {
 
       <button type="button" class="key key-num key-zero" data-action="number" data-value="0">0</button>
       <button type="button" class="key key-num" data-action="decimal">.</button>
-      <button type="button" class="key key-fn" data-action="percent">%</button>
       <button type="button" class="key key-equals" data-action="equals">=</button>
     </section>
   </main>
@@ -232,22 +264,18 @@ const state = {
   operator: null,
   justEvaluated: false,
   degreeMode: true,
-  memory: 0,
 };
 
 const expressionEl = document.getElementById('expression');
 const resultEl = document.getElementById('result');
-const memoryEl = document.getElementById('memoryIndicator');
 const keypad = document.querySelector('.keypad');
-const sciRows = document.querySelectorAll('.row');
+const sciRow = document.querySelector('.sci-row');
 const modeToggle = document.getElementById('modeToggle');
 
-// Format a number for display: strip floating noise, cap length, use exponential for extremes.
 function formatNumber(numStr) {
   if (numStr === 'Error') return 'Error';
   const num = Number(numStr);
   if (!isFinite(num)) return 'Error';
-
   const absNum = Math.abs(num);
   if (absNum !== 0 && (absNum >= 1e15 || absNum < 1e-9)) {
     return num.toExponential(6);
@@ -263,7 +291,6 @@ function formatNumber(numStr) {
 function updateDisplay() {
   expressionEl.textContent = state.expression;
   resultEl.textContent = formatNumber(state.currentValue);
-  memoryEl.textContent = state.memory !== 0 ? 'M' : '';
 }
 
 function clearAll() {
@@ -319,16 +346,6 @@ function inputDecimal() {
   }
 }
 
-// Flips the sign of the current value.
-function negate() {
-  if (state.currentValue === 'Error' || state.currentValue === '0') return;
-  state.currentValue = state.currentValue.startsWith('-')
-    ? state.currentValue.slice(1)
-    : '-' + state.currentValue;
-  updateDisplay();
-}
-
-// Core binary arithmetic, no eval().
 function calculate(a, b, op) {
   const x = parseFloat(a);
   const y = parseFloat(b);
@@ -343,85 +360,48 @@ function calculate(a, b, op) {
   }
 }
 
-// Unary scientific functions applied to the current value.
-function applyFunction(fnName) {
+function applyTrig(fnName) {
   if (state.currentValue === 'Error') return;
   const raw = parseFloat(state.currentValue);
   if (isNaN(raw)) return;
 
+  const radians = state.degreeMode ? (raw * Math.PI) / 180 : raw;
   let outcome;
-  let label = fnName;
 
   switch (fnName) {
-    case 'sin': {
-      const radians = state.degreeMode ? (raw * Math.PI) / 180 : raw;
+    case 'sin':
       outcome = Math.sin(radians);
-      label = `sin(${formatNumber(state.currentValue)}${state.degreeMode ? '°' : ''})`;
       break;
-    }
-    case 'cos': {
-      const radians = state.degreeMode ? (raw * Math.PI) / 180 : raw;
+    case 'cos':
       outcome = Math.cos(radians);
-      label = `cos(${formatNumber(state.currentValue)}${state.degreeMode ? '°' : ''})`;
       break;
-    }
     case 'tan': {
-      const radians = state.degreeMode ? (raw * Math.PI) / 180 : raw;
       const cosVal = Math.cos(radians);
-      if (Math.abs(cosVal) < 1e-12) { showError(); return; }
+      if (Math.abs(cosVal) < 1e-12) {
+        showError();
+        return;
+      }
       outcome = Math.tan(radians);
-      label = `tan(${formatNumber(state.currentValue)}${state.degreeMode ? '°' : ''})`;
       break;
     }
-    case 'sqrt':
-      if (raw < 0) { showError(); return; }
-      outcome = Math.sqrt(raw);
-      label = `√(${formatNumber(state.currentValue)})`;
-      break;
-    case 'square':
-      outcome = raw * raw;
-      label = `(${formatNumber(state.currentValue)})²`;
-      break;
-    case 'inverse':
-      if (raw === 0) { showError(); return; }
-      outcome = 1 / raw;
-      label = `1/(${formatNumber(state.currentValue)})`;
-      break;
-    case 'log':
-      if (raw <= 0) { showError(); return; }
-      outcome = Math.log10(raw);
-      label = `log(${formatNumber(state.currentValue)})`;
-      break;
-    case 'ln':
-      if (raw <= 0) { showError(); return; }
-      outcome = Math.log(raw);
-      label = `ln(${formatNumber(state.currentValue)})`;
-      break;
     default:
       return;
   }
 
-  // Clean up floating-point noise (e.g. sin(180°) landing on -1.2e-16 instead of 0).
   outcome = Math.round(outcome * 1e12) / 1e12;
-
-  state.expression = `${label} =`;
+  state.expression = `${fnName}(${formatNumber(state.currentValue)})${state.degreeMode ? '°' : ' rad'} =`;
   state.currentValue = String(outcome);
   state.justEvaluated = true;
-  updateDisplay();
-}
-
-// Inserts π or e as the current value.
-function insertConstant(name) {
-  state.currentValue = name === 'pi' ? String(Math.PI) : String(Math.E);
-  state.expression = '';
-  state.justEvaluated = false;
   updateDisplay();
 }
 
 function chooseOperator(op) {
   if (state.operator && !state.justEvaluated && state.previousValue !== null) {
     const outcome = calculate(state.previousValue, state.currentValue, state.operator);
-    if (outcome === null) { showError(); return; }
+    if (outcome === null) {
+      showError();
+      return;
+    }
     state.previousValue = String(outcome);
     state.currentValue = String(outcome);
   } else {
@@ -430,8 +410,12 @@ function chooseOperator(op) {
   state.operator = op;
   state.expression = `${formatNumber(state.previousValue)} ${op}`;
   state.justEvaluated = false;
-  state.currentValue = '0';
+  primeForNextEntry();
   updateDisplay();
+}
+
+function primeForNextEntry() {
+  state.currentValue = '0';
 }
 
 function applyPercent() {
@@ -450,7 +434,10 @@ function applyPercent() {
 function evaluateExpression() {
   if (state.operator === null || state.previousValue === null) return;
   const outcome = calculate(state.previousValue, state.currentValue, state.operator);
-  if (outcome === null) { showError(); return; }
+  if (outcome === null) {
+    showError();
+    return;
+  }
   state.expression = `${formatNumber(state.previousValue)} ${state.operator} ${formatNumber(state.currentValue)} =`;
   state.currentValue = String(outcome);
   state.previousValue = null;
@@ -473,29 +460,6 @@ function toggleDegreeMode() {
   modeToggle.setAttribute('aria-pressed', String(state.degreeMode));
 }
 
-// Memory operations: MC clears, MR recalls, M+ adds current value, M- subtracts current value.
-function handleMemory(action) {
-  const val = parseFloat(state.currentValue);
-  switch (action) {
-    case 'MC':
-      state.memory = 0;
-      break;
-    case 'MR':
-      if (state.memory !== 0) {
-        state.currentValue = String(state.memory);
-        state.justEvaluated = false;
-      }
-      break;
-    case 'M+':
-      if (!isNaN(val)) state.memory += val;
-      break;
-    case 'M-':
-      if (!isNaN(val)) state.memory -= val;
-      break;
-  }
-  updateDisplay();
-}
-
 keypad.addEventListener('click', (e) => {
   const btn = e.target.closest('.key');
   if (!btn) return;
@@ -506,7 +470,6 @@ keypad.addEventListener('click', (e) => {
     case 'decimal': inputDecimal(); break;
     case 'operator': chooseOperator(value); flashKey(btn, '.key-op'); break;
     case 'percent': applyPercent(); break;
-    case 'negate': negate(); break;
     case 'clear': clearAll(); break;
     case 'delete': deleteLast(); break;
     case 'equals': evaluateExpression(); break;
@@ -514,24 +477,17 @@ keypad.addEventListener('click', (e) => {
   }
 });
 
-sciRows.forEach((row) => {
-  row.addEventListener('click', (e) => {
-    const btn = e.target.closest('.key');
-    if (!btn) return;
-    const action = btn.dataset.action;
-    const value = btn.dataset.value;
-    if (action === 'function') {
-      applyFunction(value);
-      flashKey(btn, '.key-sci');
-    } else if (action === 'constant') {
-      insertConstant(value);
-      flashKey(btn, '.key-sci');
-    } else if (action === 'toggle-mode') {
-      toggleDegreeMode();
-    } else if (action === 'memory') {
-      handleMemory(value);
-    }
-  });
+sciRow.addEventListener('click', (e) => {
+  const btn = e.target.closest('.key');
+  if (!btn) return;
+  const action = btn.dataset.action;
+  const value = btn.dataset.value;
+  if (action === 'function') {
+    applyTrig(value);
+    flashKey(btn, '.key-sci');
+  } else if (action === 'toggle-mode') {
+    toggleDegreeMode();
+  }
 });
 
 function flashKey(btn, groupSelector) {
@@ -541,7 +497,10 @@ function flashKey(btn, groupSelector) {
 
 document.addEventListener('keydown', (e) => {
   const key = e.key;
-  if (/^[0-9]$/.test(key)) { inputDigit(key); return; }
+  if (/^[0-9]$/.test(key)) {
+    inputDigit(key);
+    return;
+  }
   switch (key) {
     case '.': inputDecimal(); break;
     case '+': chooseOperator('+'); break;
